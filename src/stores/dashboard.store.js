@@ -15,47 +15,17 @@ const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
 // const textColor = documentStyle.getPropertyValue('--text-color');
 // const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
 // const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
+function generarColoresHex(numColores) {
+    var colores = [];
+    for (var i = 0; i < numColores; i++) {
+        var color = '#'+(Math.random()*0xFFFFFF<<0).toString(16).padStart(6, '0');
+        colores.push(color);
+    }
+    return colores;
+}
 
-const colors = [
-    '#3E7874',
-    '#4EA39E',
-    '#71BDB8',
-    '#55A39E',
-    '#7AEAE3',
-    '#58B8A5',
-    '#43a047',
-    '#388e3c',
-    '#1b5e20',
-    '#00e676',
-    '#00c853',
-    '#004d40',
-    '#c8ff76',
-    '#ddff00',
-    '#aeff58',
-    '#ffeb3b',
-    '#fdd835',
-    '#fbc02d'
-]
-const colors2 = [
-    'rgba(62,120,116,0.44)',
-    'rgba(78,163,158,0.48)',
-    'rgba(113,189,184,0.45)',
-    'rgba(85,163,158,0.47)',
-    'rgba(122,234,227,0.48)',
-    'rgba(88,184,165,0.47)',
-    'rgba(67,160,71,0.47)',
-    'rgba(56,142,60,0.5)',
-    'rgba(27,94,32,0.45)',
-    'rgba(0,230,118,0.42)',
-    'rgba(0,200,83,0.44)',
-    'rgba(0,77,64,0.45)',
-    'rgba(200,255,118,0.5)',
-    'rgba(221,255,0,0.5)',
-    'rgba(174,255,88,0.51)',
-    'rgba(255,235,59,0.45)',
-    'rgba(253,216,53,0.49)',
-    'rgba(251,192,45,0.45)'
-]
+const colors = generarColoresHex(20);
+const colors2 = colors.map(color => color + 'ba')
 export const useDashboardStore = defineStore({
     id: 'dashboard',
     state: () => ({
@@ -79,9 +49,9 @@ export const useDashboardStore = defineStore({
         },
         storeBarChartOptions: {
             maintainAspectRatio: false,
-            aspectRatio: 0.9,
+            aspectRatio: 0.6,
             interaction: {
-                mode: 'x'
+                mode: 'point'
             },
             spanGaps: true,
             plugins: {
@@ -113,7 +83,7 @@ export const useDashboardStore = defineStore({
                     }
                 },
                 y: {
-                    stacked: true,
+                    stacked: false,
                     ticks: {
                         color: textColorSecondary
                     },
@@ -132,13 +102,9 @@ export const useDashboardStore = defineStore({
             maintainAspectRatio: false,
             aspectRatio: 0.9,
             interaction: {
-                mode: 'x'
+                mode: 'point'
             },
             plugins: {
-                tooltips: {
-                    mode: 'point',
-                    intersect: 'x'
-                },
                 legend: {
                     labels: {
                         boxWidth: 8,
@@ -228,6 +194,7 @@ export const useDashboardStore = defineStore({
         async setOperationsVentas(day, dias) {
             const itmBase = []
             const info = []
+            this.isLoading = true;
             const itemsOperations = await fetchWrapper.get(baseUrl + 'operations/ventas?day='+ day +'&weekDesfase=' + dias);
 
             let agrupadoPorRepartidor = itemsOperations.reduce((result, {no_ruta, dte, total_klt}) => {
@@ -238,6 +205,7 @@ export const useDashboardStore = defineStore({
                     result[no_ruta] = [0, 0, 0, 0, 0, 0, 0];
 
                 result[no_ruta][wd] = total_klt;
+                result
                 return result;
             }, {});
 let agrupadoPorRepartidor2 = itemsOperations.reduce((result, {no_ruta, dte, cobro}) => {
@@ -267,9 +235,10 @@ let agrupadoPorRepartidor2 = itemsOperations.reduce((result, {no_ruta, dte, cobr
                 })
                 info.push({
                         label: 'R-' + aKey,
+                        order: agrupadoPorRepartidor[aKey].filter((a, i) => i !== 1).reduce((a,b)=> a + b, 0),   
                         data: agrupadoPorRepartidor[aKey].filter((a, i) => i !== 1),
                         type: 'bar',
-                        borderColor: colors[itmBase.length],
+                        borderColor: colors[info.length],
                         backgroundColor: colors[info.length],
                     }
                 )
@@ -285,6 +254,8 @@ let agrupadoPorRepartidor2 = itemsOperations.reduce((result, {no_ruta, dte, cobr
                     labels: ['Sabado', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes'],
                     datasets: info
                 }
+
+                console.log({...this.storeBarChartOptions}, {...this.storeBarChartData});
                 this.isLoading = false
                 // console.log(this.storeBarChartData, this.st)
             }, 1000)
