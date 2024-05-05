@@ -6,7 +6,7 @@ moment.locale('es-mx')
 console.log('----', moment().format());
 // const baseUrl = `http://localhost:3000/`;
 const baseUrl = import.meta.env.VITE_BASE_URL;
-const isProduction = baseUrl.includes('localhost') ? 0 : 0;
+const isProduction = baseUrl.includes('localhost') ? 0 : 1;
 const documentStyle = getComputedStyle(document.documentElement);
 const textColor = documentStyle.getPropertyValue('--text-color');
 const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
