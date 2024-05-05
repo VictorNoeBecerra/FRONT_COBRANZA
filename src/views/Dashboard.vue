@@ -40,7 +40,8 @@ const setData = (param) => {
   store.setOperationsVentas(moment().format('YYYY-MM-DD'), semanaAtras.value)
   // store.setOperationsCierres()
   store.setProductsTOP()
-  store.getAll(moment().subtract(1, 'days').format('YYYY-MM-DD'));
+  // store.getAll(moment().subtract(1, 'days').format('YYYY-MM-DD'));
+  store.getAll(moment().format('YYYY-MM-DD'));
   // console.log'setCurrentP-> ', store.getOperations)
 }
 
