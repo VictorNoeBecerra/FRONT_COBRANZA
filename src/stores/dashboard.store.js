@@ -392,10 +392,10 @@ let agrupadoPorRepartidor2 = itemsOperations.reduce((result, {no_ruta, dte, cobr
                 this.product = {error};
             }
         },
-        async setProductsTOP() {
+        async setProductsTOP(day, dias) {
             this.product = {loading: true};
             try {
-                const respons = await fetchWrapper.get(`${baseUrl}productos/top`);
+                const respons = await fetchWrapper.get(`${baseUrl}productos/top?day=${day}&weekDesfase=${dias}`);
                 console.log('...')
                 console.log('....<.')
                 console.log(respons)

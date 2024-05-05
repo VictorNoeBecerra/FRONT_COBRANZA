@@ -9,6 +9,7 @@ import { useLayout } from '@/layout/composables/layout';
 import { useToast } from "primevue/usetoast";
 import { useDashboardStore } from '@/stores'
 import { getCurrentColumns } from "@/shared/control";
+// import moment from 'moment';
 // import moment from "moment";
 
 const store = useDashboardStore()
@@ -29,17 +30,12 @@ const _f = 'LL'
 
 
 // moment.locale('es-mx')
-moment.updateLocale("es-mx", {
-  week: {
-    dow: 6, // First day of week is Saturday
-    doy: 8 // First week of year must contain 1 January (7 + 6 - 1)
-  }
-});
+
 
 const setData = (param) => {
   store.setOperationsVentas(moment().format('YYYY-MM-DD'), semanaAtras.value)
   // store.setOperationsCierres()
-  store.setProductsTOP()
+  store.setProductsTOP(moment().format('YYYY-MM-DD'), semanaAtras.value)
   // store.getAll(moment().subtract(1, 'days').format('YYYY-MM-DD'));
   store.getAll(moment().format('YYYY-MM-DD'));
   // console.log'setCurrentP-> ', store.getOperations)
@@ -60,12 +56,17 @@ const formatCurrency = (value) => {
 
 const handleChange = (add = false) => {
   if (!!add) {
-    semanaAtras.value--
+    if (semanaAtras > 0)
+      semanaAtras.value--
+    else{
+      return
+    }
 
   } else {
     semanaAtras.value++
   }
   store.setOperationsVentas(moment().format('YYYY-MM-DD'), semanaAtras.value)
+  store.setProductsTOP(moment().format('YYYY-MM-DD'), semanaAtras.value)
 
 };
 
@@ -78,6 +79,17 @@ const getTextSem = (dias) => {
   // console.logstart, end)
   return start
 }
+const getTextProds = (dias) => {
+  const baseDate = moment().subtract((Number(dias) || 0), 'weeks')
+  let start = baseDate.startOf('week').format(_f), end = baseDate.endOf('week').format(_f);
+  if (!dias) {
+    baseDate.hours(3)
+    start = baseDate.startOf('week').hours(15).calendar()
+    return `desde ${start}.`
+  }
+  // console.logstart, end)
+  return `del ${start} al ${end}.`
+}
 
 
 
@@ -88,7 +100,9 @@ const getTextSem = (dias) => {
   <div class="grid">
     <Toast />
 
-    
+    <div class="col-12 pb-0">
+      <p class="mb-0 p-0">Resúmen del día de hoy</p>
+    </div>
     <div class="col-6  lg:col-6 xl:col-3">
       <div class="card mb-0 px-3 py-3 ">
         <div class="flex  justify-content-between">
@@ -162,7 +176,7 @@ const getTextSem = (dias) => {
       </div>
     </div>
 
-    <div class="col-12">
+    <div class="col-12 mt-3">
       <div class="ctrl-box gap-5">
         <button :disabled="store.getLoading === true" @click="(e) => handleChange(false)" class="btn-dire flex-1">
           <template v-if="store.getLoading === true">
@@ -279,24 +293,20 @@ const getTextSem = (dias) => {
           </DataTable>
       </div> -->
       <div class="card">
-        <div class="flex justify-content-between align-items-center mb-2">
-          <h5>Productos más vendidos</h5>
-          <div>
-            <Button icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded"
-              @click="$refs.menu2.toggle($event)"></Button>
-            <!--            <Menu ref="menu2" :popup="true" :model="items"></Menu>-->
-          </div>
+        <div class="flex justify-content-between align-items-center mb-0">
+          <h5 class="m-0">Productos más vendidos</h5>
         </div>
+        <p class="font-light">Detalle de venta en los productos más vendidos {{ getTextProds(semanaAtras) }}</p>
         <ul class="list-none p-0 m-0">
-          <li v-for="item in store.getProdTop"
-            class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+          <li v-for="(item, index) in store.getProdTop"
+            class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-2 border-div">
             <div>
-
-              <span class="text-900 font-medium mr-2 mb-1 md:mb-0 w-3rem"> [{{ item.code }}]</span>
+              <b class="text-muted">{{ index }}.- </b>
               <span class="mt-1 text-600">{{ item.description }} </span>
+              <span class="text-red-600 ml-1 font-semibold text-xs"> [{{ item.code }}]</span>
             </div>
             <div class="mt-2 md:mt-0 flex align-items-center">
-              <span class="text-400 ml-3 font-light"><small>x {{ item.vendido }}</small></span>
+              <span class="text-400 ml-3 font-light">{{ item.vendido }}<small>Pzs.</small></span>
               <span class="text-red-600 ml-3 font-medium">{{ formatCurrency(item.vendido * item.precio_lista) }}</span>
             </div>
           </li>
@@ -430,6 +440,10 @@ const getTextSem = (dias) => {
   animation-timing-function: ease;
   animation-direction: normal;
   animation-iteration-count: infinite;
+}
+
+.border-div {
+  border-top: 1px solid rgba(128, 128, 128, 0.312);
 }
 
 @keyframes rotate {
