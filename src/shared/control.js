@@ -19,9 +19,9 @@ let commonProperties = {
     "Factores de conversión": [
       {field: "id", header: "id"},
       {field: "description", header: "descripcion"},
-      {field: "um", header: "um"},
-      {field: "cantidad", header: "cantidad"},
-      {field: "um_eq", header: "um_eq"},
+      {field: "um_codigo", header: "Medida base"},
+      {field: "cantidad", header: "cantidad "},
+      {field: "um_eq_codigo", header: "Medida equiv."},
     ],
     Productos: [
       {field: "code", header: "code"},
